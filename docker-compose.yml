@@ -1,0 +1,9 @@
+services:
+  bot:
+    build: .
+    container_name: mc_bot
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ~/.ssh:/root/.ssh:ro

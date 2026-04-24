@@ -1,0 +1,19 @@
+.env
+*.pem
+idrac_key*
+" "
+"\n"
+
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.env/
+
+.dockerignore
+*.log
+
+.DS_Store
+Thumbs.db
