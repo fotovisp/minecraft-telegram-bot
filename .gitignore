@@ -1,8 +1,6 @@
 .env
 *.pem
 idrac_key*
-" "
-"\n"
 
 __pycache__/
 *.py[cod]
