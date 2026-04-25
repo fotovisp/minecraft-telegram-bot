@@ -1,91 +1,66 @@
-# iDRAC 7 Telegram Management Bot 
+# Minecraft & IDRAC 7 Server Management Telegram Bot 🤖
 
-A lightweight asynchronous Telegram bot for remote power management and status monitoring of **Dell PowerEdge R720xd** servers. This tool uses secure SSH key authentication to interact with the iDRAC 7 controller.
+A powerful asynchronous Telegram bot built with Aiogram 3.x to remotely control a Minecraft server and the physical hardware it runs on. It bridges the gap between game management (via tmux/mcrcon) and hardware control (via iDRAC 7).
 
 ## 🚀 Features
-* **Live Status:** Check real-time power status (ON/OFF) via Telegram.
-* **Power Control:** Remotely Power Up, Graceful Shutdown, or Hard Reset the server.
-* **Secure Auth:** Uses RSA SSH keys (no passwords stored in plain text).
-* **Dockerized:** Fully containerized for easy deployment and isolation.
 
-## 🖥 Tested Hardware
-* **Model:** Dell PowerEdge R720xd
-* **Controller:** iDRAC 7 Enterprise
-* **Firmware:** v2.65.65.65 (Latest Stable)
-* **BIOS:** v2.9.0
+### 🔌 Hardware Management (iDRAC 7)
+* Power Control: power on / power off commands to manage physical server state.
+* Smart Status: Checks if the server is connected to electricity (iDRAC ping) and its current power state via racadm.
+* Automated Monitoring: When powering on, the bot pings the host OS and notifies you once it is fully booted.
+
+### 🎮 Minecraft Server Control
+* Process Management: start, stop, and restart server instances within a tmux session.
+* Player Access: list command to see who is online using mcrcon.
+* Reliable Backups: backup command triggers a multi-disk redundancy script to safeguard world data.
 
 ## 🛠 Tech Stack
-* **Python 3.11**
-* **Aiogram 3.x** (Telegram Framework)
-* **Fabric/Invoke** (SSH Orchestration)
-* **Docker & Docker Compose**
+* Python 3.11 (Aiogram 3.x, Fabric)
+* Docker & Docker Compose (Containerization)
+* Tmux (Session persistence)
+* Mcrcon (RCON protocol communication)
+* Bash (Automation scripts)
 
-## 📋 Prerequisites
+## 📋 Requirements & Setup
 
-### 1. Generate SSH Keys
-iDRAC 7 requires legacy RSA keys. Generate a 2048-bit key on your host machine:
-\`\`\`bash
-ssh-keygen -t rsa -b 2048 -f ~/.ssh/idrac_key
-\`\`\`
+### 1. SSH Configuration
+The bot expects an SSH alias named "idrac" to handle legacy RSA algorithms required by iDRAC 7. Add this to your ~/.ssh/config:
 
-### 2. Upload Public Key to iDRAC
-Push your key to the iDRAC controller using the \`racadm\` utility:
-\`\`\`bash
-racadm -r <IDRAC_IP> -u root -p <PASSWORD> sshpkauth -i 2 -k 1 -t "\$(cat ~/.ssh/idrac_key.pub)"
-\`\`\`
-
-### 3. SSH Client Configuration
-To ensure the bot connects properly, add this entry to your \`~/.ssh/config\`:
-\`\`\`text
 Host idrac
-    HostName <IDRAC_IP>
-    User root
+    HostName <YOUR_IDRAC_IP>
+    User <YOUR_USER>
     IdentityFile ~/.ssh/idrac_key
     PubkeyAcceptedAlgorithms +ssh-rsa
     HostKeyAlgorithms +ssh-rsa
     StrictHostKeyChecking no
-\`\`\`
 
-## ⚙️ Installation & Deployment
+### 2. Minecraft Server Setup
+* Enable RCON in your server.properties and set a password.
+* Ensure tmux is installed on the host server.
+* Place backup.sh in your server directory and make it executable.
 
-### 1. Project Setup
-Clone the repository and prepare the environment:
-\`\`\`bash
-git clone https://github.com/fotovisp/minecraft-telegram-bot
-cd minecraft-telegram-bot
-cp .env.example .env
-# Edit .env with your BOT_TOKEN and admin USER_ID
-\`\`\`
+### 3. Environment Variables
+Copy .env.example to .env and fill in your credentials:
+* Bot Token & Admin ID
+* Host SSH details (IP, User)
+* iDRAC credentials
+* RCON password & Tmux session name
 
-### 2. Server-Side Execution (start_bot.sh)
-The project includes a \`start_bot.sh\` script located on the host server. This script automates the deployment process by building the image and starting the container in detached mode.
+## ⚙️ Deployment
 
-To launch the bot, run:
-\`\`\`bash
-chmod +x start_bot.sh
-./start_bot.sh
-\`\`\`
+For production (Docker):
+$ docker compose up -d --build
 
-### 3. Manual Docker Management
-Alternatively, you can manage the container using standard Docker Compose commands:
-\`\`\`bash
-# Build and start
-docker compose up -d --build
-
-# Check logs
-docker compose logs -f
-
-# Stop the bot
-docker compose down
-\`\`\`
+For testing/manual start:
+$ chmod +x start_bot.sh
+$ ./start_bot.sh
 
 ## 📂 Project Structure
-* \`bot.py\` – Core bot logic and Telegram handlers.
-* \`Dockerfile\` – Python environment and dependencies.
-* \`docker-compose.yml\` – Service orchestration and volume mapping for SSH keys.
-* \`start_bot.sh\` – Automation script for server-side execution.
-* \`.env.example\` – Template for required environment variables.
-* \`.gitignore\` – Protection for sensitive files (.env, keys, logs).
+* bot.py — Main logic and Telegram handlers.
+* backup.sh — Multi-disk backup automation script.
+* start_bot.sh — Shell script for quick launch.
+* requirements.txt — Python dependencies.
+* docker-compose.yml — Docker orchestration file.
 
 ---
-**Developed b fotovisp**
+Developed for automated server infrastructure management.
