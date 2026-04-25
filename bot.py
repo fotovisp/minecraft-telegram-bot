@@ -45,8 +45,9 @@ async def run_remote(command):
 async def idrac_remote(command):
     def sync():
         try:
-            with Connection(host="idrac") as c:
-                result = c.run(command, hide=True, pty=True)
+            # i made ssh connection to idrac without password using ssh keys, so there is no need to pass user and password in the command
+            with Connection(host="idrac", connect_timeout=20) as c:
+                result = c.run(command, hide=True, pty=True, timeout=30)
                 return result.stdout.strip()
         except Exception as e:
             return f"Error: {e}"
@@ -77,7 +78,7 @@ async def start(message: types.Message):
     elif id in users_id:
         kb = [
             [types.KeyboardButton(text="start"), types.KeyboardButton(text="restart")],
-            [types.KeyboardButton(text="list")],
+            [types.KeyboardButton(text="list"), types.KeyboardButton(text="status")],
         ]
         keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
         await message.answer("mc_control:", reply_markup=keyboard)
@@ -229,9 +230,9 @@ async def power_off_server(message: types.Message):
 async def status_server(message: types.Message):
     if message.from_user.id == admin_id or message.from_user.id in users_id:
         status_msg = await message.answer("checking if server connected to electricity")
-        pwr_status_raw = await idrac_remote("racadm serveraction getpwrstatus")
+        pwr_status_raw = await idrac_remote("racadm serveraction powerstatus")
 
-        if "ON" in pwr_status_raw.upper():
+        if "ON" in pwr_status_raw:
             pwr_status = "idrac is powered ON"
 
             check_command = f"tmux has-session -t {tmux_session} 2>/dev/null && echo 'running' || echo 'stopped'"
@@ -239,7 +240,6 @@ async def status_server(message: types.Message):
 
             if "running" in status:
                 tmux_session_status = "minecraft is running"
-                return
             else:
                 tmux_session_status = "minecraft is NOT running"
         else:

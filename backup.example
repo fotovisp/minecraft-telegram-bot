@@ -1,0 +1,24 @@
+#!/bin/bash
+
+SERVER_DIR="/"
+BACKUP_NAME="mc_backup_$(date +%Y%m%d_%H%M%S).tar.gz"
+BACKUP_DESTINATIONS=("/mnt/hdd0" "/mnt/hdd1" "/mnt/hdd2" "/mnt/hdd3")
+
+echo "Starting local backup..."
+
+tar -czf "/tmp/$BACKUP_NAME" -C "$SERVER_DIR" .
+
+SUCCESS_COUNT=0
+for dest in "${BACKUP_DESTINATIONS[@]}"; do
+  if [ -d "$dest" ]; then
+    cp "/tmp/$BACKUP_NAME" "$dest/"
+    if [ $? -eq 0 ]; then
+        echo "Saved to $dest"
+        ((SUCCESS_COUNT++))
+    fi
+  fi
+done
+
+rm "/tmp/$BACKUP_NAME"
+
+echo "Done! Backup distributed to $SUCCESS_COUNT disks."
