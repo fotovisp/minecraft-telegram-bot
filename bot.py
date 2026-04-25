@@ -26,10 +26,6 @@ bot = Bot(token=token)
 dp = Dispatcher()
 
 
-def send_tmux_command(commnd):
-    run_remote(f"tmux send-keys -t {tmux_session} '{commnd}' C-m")
-
-
 async def run_remote(command):
     def sync_run():
         try:
@@ -216,6 +212,7 @@ async def power_off_server(message: types.Message):
             await message.answer("server is connected to electricity")
         else:
             await message.answer("server is NOT connected to electricity")
+            return
 
         await message.answer("trying to power off")
         await idrac_remote("racadm serveraction gracefulshutdown")
@@ -233,7 +230,7 @@ async def status_server(message: types.Message):
         pwr_status_raw = await idrac_remote("racadm serveraction powerstatus")
 
         if "ON" in pwr_status_raw:
-            pwr_status = "idrac is powered ON"
+            pwr_status = "server is powered ON"
 
             check_command = f"tmux has-session -t {tmux_session} 2>/dev/null && echo 'running' || echo 'stopped'"
             status = await run_remote(check_command)
@@ -243,7 +240,7 @@ async def status_server(message: types.Message):
             else:
                 tmux_session_status = "minecraft is NOT running"
         else:
-            pwr_status = "idrac is powered OFF"
+            pwr_status = "server is powered OFF"
             tmux_session_status = "minecraft is NOT running"
 
         answer_user = f"{pwr_status}\n{tmux_session_status}"
