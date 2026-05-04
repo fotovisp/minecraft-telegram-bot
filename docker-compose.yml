@@ -3,6 +3,13 @@ services:
     build: .
     container_name: mc_bot
     restart: always
+    healthcheck:
+      test: ["CMD", "ping", "-c", "1", "8.8.8.8"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
     env_file:
       - .env
     volumes:

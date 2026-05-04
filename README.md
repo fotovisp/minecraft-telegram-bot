@@ -56,8 +56,12 @@ $ chmod +x start_bot.sh
 $ ./start_bot.sh
 
 ## 📂 Project Structure
-* bot.py — Main logic and Telegram handlers.
-* backup.sh — Multi-disk backup automation script.
+* commands/admin_commands.py — Admin-only handlers (power, backup, stop).
+* commands/user_commands.py — User handlers (start, restart, list, status).
+* config.py — Environment variables & configuration.
+* telegram_bot.py — Bot & dispatcher setup, SSH helpers.
+* main.py — Entry point.
+* backup.example — Example backup script.
 * start_bot.sh — Shell script for quick launch.
 * requirements.txt — Python dependencies.
 * docker-compose.yml — Docker orchestration file.

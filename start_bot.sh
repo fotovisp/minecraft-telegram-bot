@@ -6,4 +6,4 @@ fi
 
 cd $user_path/bot
 source .venv/bin/activate
-python3 bot.py
+python3 main.py
