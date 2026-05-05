@@ -3,6 +3,10 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from fabric import Connection
 from config import Config
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class Telegram_Bot(Config):
@@ -27,8 +31,10 @@ class Telegram_Bot(Config):
             try:
                 with Connection(host=self.dell_host, user=self.dell_user) as c:
                     result = c.run(command, hide=True)
+                    logger.info(f"Executed command: {command}")
                     return result.stdout.strip()
             except Exception as e:
+                logger.error(f"Error executing command: {command}, Error: {e}")
                 return f"Error: {e}"
 
         return await asyncio.to_thread(sync_run)
@@ -39,8 +45,10 @@ class Telegram_Bot(Config):
                 # i made ssh connection to idrac without password using ssh keys, so there is no need to pass user and password in the command
                 with Connection(host="idrac", connect_timeout=20) as c:
                     result = c.run(command, hide=True, pty=True, timeout=30)
+                    logger.info(f"Executed iDRAC command: {command}")
                     return result.stdout.strip()
             except Exception as e:
+                logger.error(f"Error executing iDRAC command: {command}, Error: {e}")
                 return f"Error: {e}"
 
         return await asyncio.to_thread(sync)
@@ -63,6 +71,7 @@ class Telegram_Bot(Config):
             ]
             keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
             await message.answer("mc_control:", reply_markup=keyboard)
+            logger.info(f"Admin {id} accessed the bot")
 
         elif id in self.users_id:
             kb = [
@@ -77,3 +86,4 @@ class Telegram_Bot(Config):
             ]
             keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
             await message.answer("mc_control:", reply_markup=keyboard)
+            logger.info(f"User {id} accessed the bot")
