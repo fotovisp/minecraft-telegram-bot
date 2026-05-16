@@ -1,5 +1,5 @@
 import logging
-from user_commands import User_Commands
+from commands.user_commands import User_Commands
 import asyncio
 from aiogram import types
 
