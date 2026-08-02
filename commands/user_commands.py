@@ -18,18 +18,27 @@ class User_Commands(Telegram_Bot):
         return False
 
     async def async_ping(self, host):
-        process = await asyncio.create_subprocess_exec(
-            "ping",
-            "-c",
-            "1",
-            "-W",
-            "2",
-            host,
-            stdout=asyncio.subprocess.DEVNULL,
-            stderr=asyncio.subprocess.DEVNULL,
-        )
-        await process.wait()
-        return process.returncode == 0
+        process = None
+        try:
+            process = await asyncio.create_subprocess_exec(
+                "ping",
+                "-c",
+                "1",
+                "-W",
+                "2",
+                host,
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+            await asyncio.wait_for(process.wait(), timeout=3.0)
+            return process.returncode == 0
+        except (asyncio.TimeoutError, Exception):
+            if process is not None:
+                try:
+                    process.kill()
+                except Exception:
+                    pass
+            return False
 
     async def start_mc(self, message: types.Message):
         if self.check_user_permission(message.from_user.id):
@@ -108,7 +117,7 @@ class User_Commands(Telegram_Bot):
             )
             ping_result = await self.async_ping(self.ip_idrac)
             if ping_result:
-                await message.amswer(
+                await message.answer(
                     "server is connected to network, checking power status..."
                 )
                 logger.info(
