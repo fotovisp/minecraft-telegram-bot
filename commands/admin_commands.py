@@ -2,6 +2,7 @@ import logging
 from commands.user_commands import User_Commands
 import asyncio
 from aiogram import types
+from aiogram.filters import Command, CommandObject
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class Admin_Commands(User_Commands):
 
     async def stop_mc(self, message: types.Message):
         if self.check_admin_permission(message.from_user.id):
-            await self.run_remote(f"mcrcon -P 25575 -p {self.rcon_pwd} 'stop'")
+            await self.mcrcon_command("stop")
             await message.answer("shutdowning...")
             await asyncio.sleep(15)
             await message.answer("server is shutdowned")
@@ -63,3 +64,29 @@ class Admin_Commands(User_Commands):
             await asyncio.sleep(10)
             await message.answer("server is powered off")
             logger.info(f"admin {message.from_user.id} powered off the server")
+
+    async def say_server(self, message: types.Message, command: CommandObject):
+        if self.check_admin_permission(message.from_user.id):
+            user_text = command.args
+            if not user_text:
+                await message.answer("provide text, example: /say hello")
+                return
+            await message.answer("sending message to server...")
+            res = await self.mcrcon_command(f"say {user_text}")
+            await message.answer(f"done! logs: {res[:50]}")
+            logger.info(
+                f"tell_server command executed by admin {message.from_user.id}, logs: {res[:50]}"
+            )
+
+    async def execute_command(self, message: types.Message, command: CommandObject):
+        if self.check_admin_permission(message.from_user.id):
+            user_command = command.args
+            if not user_command:
+                await message.answer("provide command, example: /exec op player")
+                return
+            await message.answer(f"executing command: {user_command}")
+            res = await self.mcrcon_command(user_command)
+            await message.answer(f"done! logs: {res[:50]}")
+            logger.info(
+                f"execute_command executed by admin {message.from_user.id}, logs: {res[:50]}"
+            )

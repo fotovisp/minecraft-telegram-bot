@@ -25,6 +25,8 @@ class Telegram_Bot(Config):
         self.dp.message.register(self.power_on_server, F.text == "power on")
         self.dp.message.register(self.power_off_server, F.text == "power off")
         self.dp.message.register(self.status_server, F.text == "status")
+        self.dp.message.register(self.say_server, Command("say"))
+        self.dp.message.register(self.execute_command, Command("exec"))
 
     async def run_remote(self, command):
         def sync_run():

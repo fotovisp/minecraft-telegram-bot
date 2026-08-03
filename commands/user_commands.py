@@ -40,6 +40,9 @@ class User_Commands(Telegram_Bot):
                     pass
             return False
 
+    async def mcrcon_command(self, exec_command):
+        return await run_remote(f"mcrcon -P 25575 -p {self.rcon_pwd} '{exec_command}'")
+
     async def start_mc(self, message: types.Message):
         if self.check_user_permission(message.from_user.id):
             check_command = f"tmux has-session -t {self.tmux_session} 2>/dev/null && echo 'running' || echo 'stopped'"
@@ -56,7 +59,7 @@ class User_Commands(Telegram_Bot):
             await message.answer("starting...")
             logger.info(f"user {message.from_user.id} is starting the server")
             res = await self.run_remote(
-                f"cd {self.mc_dir} && tmux new-session -d -s {self.tmux_session} 'bash run.sh nogui' && echo 'success'"
+                f"cd {self.mc_dir} && tmux new-session -d -s {self.tmux_session} 'bash start.sh nogui' && echo 'success'"
             )
             if "success" in res:
                 await asyncio.sleep(5)
@@ -78,14 +81,12 @@ class User_Commands(Telegram_Bot):
     async def restart_mc(self, message: types.Message):
         if self.check_user_permission(message.from_user.id):
             for i in range(10, 0, -1):
-                await self.run_remote(
-                    f"mcrcon -P 25575 -p {self.rcon_pwd} 'say SERVER RESTART IN {i} SECONDS!'"
-                )
+                await self.mcrcon_command(f"say SERVER RESTART IN {i} SECONDS!")
             logger.info(
                 f"user {message.from_user.id} is restarting the server, sending countdown messages to players"
             )
             await asyncio.sleep(1)
-            await self.run_remote(f"mcrcon -P 25575 -p {self.rcon_pwd} 'stop'")
+            await self.mcrcon_command("stop")
             logger.info("stopping minecraft")
             await asyncio.sleep(15)
             await message.answer("restarting...")
@@ -152,9 +153,7 @@ class User_Commands(Telegram_Bot):
 
     async def list_mc(self, message: types.Message):
         if self.check_user_permission(message.from_user.id):
-            res = await self.run_remote(
-                f"/usr/local/bin/mcrcon -P 25575 -p {self.rcon_pwd} 'list'"
-            )
+            res = await self.mcrcon_command("list")
             logger.info(
                 f"user {message.from_user.id} is trying to list players, response: {res}"
             )
