@@ -44,7 +44,7 @@ class User_Commands(Telegram_Bot):
     async def mcrcon_command(self, exec_command):
         try:
             async with Client(
-                self.dell_host, self.mcrcon_port, self.rcon_pwd, timeout=5
+                self.dell_host, self.mcrcon_port, self.rcon_pwd
             ) as client:
                 response, _ = await client.send_cmd(exec_command)
                 return response
