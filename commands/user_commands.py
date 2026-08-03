@@ -43,11 +43,23 @@ class User_Commands(Telegram_Bot):
 
     async def mcrcon_command(self, exec_command):
         try:
-            async with Client(
-                self.dell_host, self.mcrcon_port, self.rcon_pwd
-            ) as client:
-                response, _ = await client.send_cmd(exec_command)
-                return response
+
+            async def _send():
+                async with Client(
+                    self.dell_host, int(self.mcrcon_port), str(self.rcon_pwd)
+                ) as client:
+                    res = await client.send_cmd(exec_command)
+
+                    if isinstance(res, (tuple, list)):
+                        return res[0]
+                    return res
+
+            response = await asyncio.wait_for(_send(), timeout=5.0)
+            return str(response) if response is not None else ""
+
+        except asyncio.TimeoutError:
+            logger.error(f"RCON timeout executing '{exec_command}'")
+            return "error: RCON connection timed out"
         except Exception as e:
             logger.error(f"error executing RCON command '{exec_command}': {e}")
             return f"error executing RCON command: {e}"
