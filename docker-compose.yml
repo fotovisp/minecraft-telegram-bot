@@ -1,6 +1,6 @@
 services:
   bot:
-    build: .
+    image: ghcr.io/fotovisp/minecraft-telegram-bot:latest
     container_name: mc_bot
     restart: always
     healthcheck:
@@ -14,3 +14,11 @@ services:
       - .env
     volumes:
       - ~/.ssh:/root/.ssh:ro
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 120 --cleanup
