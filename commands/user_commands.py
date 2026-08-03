@@ -2,6 +2,7 @@ from telegram_bot import Telegram_Bot
 import asyncio
 from aiogram import types
 import logging
+from aiomcrcon import Client
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,15 @@ class User_Commands(Telegram_Bot):
             return False
 
     async def mcrcon_command(self, exec_command):
-        return await run_remote(f"mcrcon -P 25575 -p {self.rcon_pwd} '{exec_command}'")
+        try:
+            async with Client(
+                self.dell_host, self.mcrcon_port, self.rcon_pwd, timeout=5
+            ) as client:
+                response, _ = await client.send_cmd(exec_command)
+                return response
+        except Exception as e:
+            logger.error(f"error executing RCON command '{exec_command}': {e}")
+            return f"error executing RCON command: {e}"
 
     async def start_mc(self, message: types.Message):
         if self.check_user_permission(message.from_user.id):
@@ -82,10 +91,10 @@ class User_Commands(Telegram_Bot):
         if self.check_user_permission(message.from_user.id):
             for i in range(10, 0, -1):
                 await self.mcrcon_command(f"say SERVER RESTART IN {i} SECONDS!")
+                await asyncio.sleep(1)
             logger.info(
                 f"user {message.from_user.id} is restarting the server, sending countdown messages to players"
             )
-            await asyncio.sleep(1)
             await self.mcrcon_command("stop")
             logger.info("stopping minecraft")
             await asyncio.sleep(15)

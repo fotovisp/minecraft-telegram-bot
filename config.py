@@ -19,3 +19,4 @@ class Config:
         self.ip_idrac = os.getenv("ip_idrac")
         self.user_idrac = os.getenv("user_idrac")
         self.password_idrac = os.getenv("password_idrac")
+        self.mcrcon_port = int(os.getenv("mcrcon_port", 25575))
